@@ -12,6 +12,8 @@
  */
 class sql_db extends pdo
 {
+	public $connect = 0;
+
 	function __construct( $config )
 	{
 		$aray_type = array(
@@ -39,7 +41,7 @@ class sql_db extends pdo
 		}
 		else
 		{
-			throw new NVDB_Exception( "Unsupported type, $Options->type" );
+			trigger_error( 'Unsupported type, ' . $config['dbtype'] );
 			return false;
 		}
 		if( ! empty( $config['dbport'] ) )
@@ -58,18 +60,13 @@ class sql_db extends pdo
 
 			# Disable emulation of prepared statements, use REAL prepared statements instead.
 			$this->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
-
-			return true;
-		}
-		catch( PDOException $e )
-		{
-			throw $e;
+			$this->connect = 1;
 		}
 		catch( Exception $e )
 		{
-			throw $e;
+			trigger_error( $e->getMessage( ) );
 		}
 	}
-}
 
+}
 ?>
