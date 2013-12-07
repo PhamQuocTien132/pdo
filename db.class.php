@@ -23,10 +23,12 @@ class sql_db extends pdo
 			'sybase',
 			'dblib'
 		);
+
 		$AvailableDrivers = PDO::getAvailableDrivers( );
+
 		if( in_array( $config['dbtype'], $AvailableDrivers ) AND in_array( $config['dbtype'], $aray_type ) )
 		{
-			$dsn = $config['dbtype'] . ':dbname=' . $config['dbname'] . ';host=' . $config['dbhost'] . ';charset=utf8';
+			$dsn = $config['dbtype'] . ':dbname=' . $config['dbname'] . ';host=' . $config['dbhost'];
 		}
 		elseif( $config['dbtype'] == 'oci' )
 		{
@@ -44,22 +46,17 @@ class sql_db extends pdo
 			trigger_error( 'Unsupported type, ' . $config['dbtype'] );
 			return false;
 		}
-		if( ! empty( $config['dbport'] ) )
-		{
-			$dsn .= 'port=' . $config['dbport'];
-		}
 
-		$driver_options = array( );
-		parent::__construct( $dsn, $config['dbuname'], $config['dbpass'], $driver_options );
+		$driver_options = array(
+			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+			PDO::ATTR_EMULATE_PREPARES => false,
+			PDO::ATTR_CASE => PDO::CASE_LOWER,
+			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+		);
+
+		parent::__construct( $dsn . ';charset=utf8', $config['dbuname'], $config['dbpass'], $driver_options );
 		try
 		{
-			//PDO::ERRMODE_SILENT: Khi gặp lỗi thì nó sẽ bỏ qua và tiếp tục chạy. Cái này tiện cho production.
-			//PDO::ERRMODE_WARNING: Khi gặp lỗi nó sẽ xuất ra thông báo và tiếp tục chạy. Cái này tiện cho việc debug.
-			//PDO::ERRMODE_EXCEPTION: Khi gặp lỗi nó sẽ đưa ra Exception và cho chúng ta xử lý
-			$this->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-
-			# Disable emulation of prepared statements, use REAL prepared statements instead.
-			$this->setAttribute( PDO::ATTR_EMULATE_PREPARES, false );
 			$this->connect = 1;
 		}
 		catch( Exception $e )
